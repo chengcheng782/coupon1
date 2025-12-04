@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>优惠券列表</title>
+  <script src="https://cdn.jsdelivr.net/npm/layui@2.8.18/dist/layui.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layui@2.8.18/dist/css/layui.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      font-size: 12px;
+    }
+
+    body {
+      background-color: #fff;
+      color: #333;
+    }
+
+    .page {
+      padding: 24px 32px;
+    }
+
+    .filter-card {
+      background: #fff;
+      border: 1px solid #e4e7ed;
+      border-radius: 4px;
+      padding: 16px 24px 4px;
+      margin-bottom: 16px;
+    }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .filter-item {
+      display: flex;
+      align-items: center;
+      margin-right: 20px;
+      margin-bottom: 8px;
+      min-width: 240px;
+      flex: 1;
+    }
+
+    .filter-item label {
+      width: 80px;
+      text-align: right;
+      margin-right: 8px;
+      color: #606266;
+      white-space: nowrap;
+    }
+
+    .filter-item input[type="text"],
+    .filter-item select {
+      flex: 1;
+      height: 28px;
+      padding: 0 8px;
+      border: 1px solid #dcdfe6;
+      border-radius: 3px;
+      outline: none;
+    }
+
+    .filter-item input[type="text"][readonly] {
+      cursor: pointer;
+      background-color: #fff;
+    }
+
+    .filter-item input[type="text"]:focus,
+    .filter-item select:focus {
+      border-color: #409eff;
+    }
+
+    .filter-item.date-range {
+      min-width: 320px;
+      flex: 1.5;
+    }
+
+    .date-range-input {
+      display: flex;
+      align-items: center;
+      flex: 1;
+    }
+
+    .date-range-input input {
+      width: 130px;
+    }
+
+    .date-separator {
+      margin: 0 6px;
+      color: #909399;
+    }
+
+    .filter-actions {
+      display: flex;
+      align-items: center;
+      margin-left: 0;
+      gap: 8px;
+    }
+
+    .btn {
+      min-width: 64px;
+      height: 28px;
+      line-height: 26px;
+      padding: 0 14px;
+      border-radius: 3px;
+      border: 1px solid #dcdfe6;
+      background-color: #fff;
+      color: #606266;
+      cursor: pointer;
+      margin-left: 8px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background-color: #409eff;
+      border-color: #409eff;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background-color: #66b1ff;
+      border-color: #66b1ff;
+    }
+
+    .btn-danger {
+      background-color: #f54e4e;
+      border-color: #f54e4e;
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      background-color: #f76b6b;
+      border-color: #f76b6b;
+    }
+
+    .btn-plain {
+      background-color: #fff;
+      color: #606266;
+    }
+
+    .btn-plain:hover {
+      border-color: #c0c4cc;
+      color: #409eff;
+    }
+
+    .btn-warning {
+      background-color: #e6a23c;
+      border-color: #e6a23c;
+      color: #fff;
+    }
+
+    .btn-warning:hover {
+      background-color: #ebb563;
+      border-color: #ebb563;
+    }
+
+    .toolbar {
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .toolbar-left .btn {
+      margin-right: 8px;
+      margin-left: 0;
+    }
+
+    .table-wrapper {
+      background: #fff;
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    thead {
+      background-color: #f5f7fa;
+    }
+
+    th,
+    td {
+      border: 1px solid #ebeef5;
+      padding: 10px 8px;
+      text-align: left;
+      vertical-align: middle;
+      word-break: break-all;
+    }
+
+    th {
+      color: #909399;
+      font-weight: 500;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #fcfcfc;
+    }
+
+    tbody tr:hover {
+      background-color: #f5f7fa;
+    }
+
+    .col-checkbox {
+      width: 40px;
+      text-align: center;
+    }
+
+    .col-status {
+      width: 90px;
+      text-align: center;
+    }
+
+    .status-valid {
+      color: #67c23a;
+      font-weight: 500;
+    }
+
+    .status-expired {
+      color: #909399;
+      font-weight: 500;
+    }
+
+    .status-invalid {
+      color: #f56c6c;
+      font-weight: 500;
+    }
+
+    .col-valid-period {
+      width: 200px;
+      white-space: normal;
+      line-height: 1.5;
+      padding: 10px 12px;
+    }
+
+    .col-creator {
+      width: 150px;
+      white-space: normal;
+      line-height: 1.5;
+      padding: 10px 12px;
+    }
+
+    input[type="checkbox"] {
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+      appearance: none;
+      -webkit-appearance: none;
+      border: 1px solid #d3dce6;
+      border-radius: 2px;
+      outline: none;
+      position: relative;
+      background-color: #fff;
+      transition: all 0.2s;
+    }
+
+    input[type="checkbox"]:hover {
+      border-color: #409eff;
+    }
+
+    input[type="checkbox"]:checked {
+      background-color: #409eff;
+      border-color: #409eff;
+    }
+
+    input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 1px;
+      width: 4px;
+      height: 8px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    .link-text {
+      color: #409eff;
+      cursor: pointer;
+    }
+
+    .link-text:hover {
+      text-decoration: underline;
+    }
+
+    .text-left {
+      text-align: left;
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .text-gray {
+      color: #909399;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0 6px;
+      height: 18px;
+      line-height: 18px;
+      border-radius: 2px;
+      font-size: 11px;
+      color: #606266;
+      background-color: #f0f2f5;
+    }
+
+    /* 确认对话框样式 */
+    .confirm-mask {
+      position: fixed;
+      z-index: 2000;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.3);
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .confirm-dialog {
+      background: #fff;
+      width: 420px;
+      border-radius: 4px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+      padding: 0;
+      animation: confirmSlideDown 0.2s ease-out;
+    }
+
+    @keyframes confirmSlideDown {
+      from {
+        transform: translateY(-20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .confirm-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid #ebeef5;
+    }
+
+    .confirm-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: #303133;
+    }
+
+    .confirm-close {
+      font-size: 18px;
+      color: #909399;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
+      text-align: center;
+    }
+
+    .confirm-close:hover {
+      color: #409eff;
+    }
+
+    .confirm-body {
+      padding: 24px 20px;
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .confirm-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: #e6a23c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      flex-shrink: 0;
+      margin-right: 12px;
+    }
+
+    .confirm-message {
+      font-size: 14px;
+      color: #606266;
+      line-height: 1.6;
+      padding-top: 2px;
+    }
+
+    .confirm-footer {
+      padding: 12px 20px 16px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .confirm-btn {
+      min-width: 70px;
+      height: 32px;
+      line-height: 30px;
+      padding: 0 16px;
+      border-radius: 3px;
+      border: 1px solid #dcdfe6;
+      background-color: #fff;
+      color: #606266;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s;
+      font-size: 12px;
+    }
+
+    .confirm-btn:hover {
+      border-color: #c0c4cc;
+      color: #409eff;
+    }
+
+    .confirm-btn-primary {
+      background-color: #409eff;
+      border-color: #409eff;
+      color: #fff;
+    }
+
+    .confirm-btn-primary:hover {
+      background-color: #66b1ff;
+      border-color: #66b1ff;
+      color: #fff;
+    }
+
+    /* 弹窗样式 */
+    .modal-mask {
+      position: fixed;
+      z-index: 1000;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal {
+      background: #fff;
+      width: 950px;
+      border-radius: 4px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      padding: 18px 32px 20px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .modal-title {
+      font-size: 14px;
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+
+    .modal-section-title {
+      font-size: 13px;
+      margin: 16px 0 6px;
+      font-weight: 500;
+    }
+
+    .modal-section-title:first-of-type {
+      margin-top: 0;
+    }
+
+    .modal-line {
+      border-top: 1px solid #ebeef5;
+      margin: 4px 0 12px;
+    }
+
+    .modal-form-row {
+      display: flex;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+
+    .modal-form-row.has-textarea {
+      margin-bottom: -34px;
+    }
+
+    .modal-form-item {
+      display: flex;
+      align-items: center;
+      margin-right: 20px;
+      margin-bottom: 10px;
+      min-width: 320px;
+    }
+
+    .modal-form-item:nth-child(even) {
+      margin-left: 70px;
+    }
+
+    .modal-form-item.wide-field {
+      flex: 1;
+      min-width: 450px;
+    }
+
+    .modal-form-item.align-top {
+      align-items: flex-start;
+    }
+
+    .modal-form-item.align-top label {
+      padding-top: 6px;
+    }
+
+    .modal-form-item.date-range {
+      min-width: 380px;
+    }
+
+    .modal-form-item label {
+      width: 110px;
+      text-align: left;
+      margin-right: 8px;
+      color: #606266;
+      white-space: nowrap;
+    }
+
+    .modal-form-item label .required {
+      color: #f56c6c;
+      margin-right: 2px;
+    }
+
+    .modal-form-item input[type="text"],
+    .modal-form-item input[type="number"],
+    .modal-form-item textarea {
+      flex: 1;
+      height: 28px;
+      padding: 0 8px;
+      border: 1px solid #dcdfe6;
+      border-radius: 3px;
+      outline: none;
+    }
+
+    .modal-form-item input[type="text"][readonly] {
+      cursor: pointer;
+      background-color: #fff;
+    }
+
+    .modal-form-item textarea {
+      height: 72px;
+      resize: vertical;
+      padding-top: 4px;
+      min-height: 72px;
+      max-height: 200px;
+    }
+
+    .modal-form-item .inline {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .modal-form-item .unit-box {
+      margin-left: -1px;
+      padding: 0 10px;
+      height: 28px;
+      line-height: 28px;
+      border: 1px solid #dcdfe6;
+      border-left: none;
+      border-radius: 0 3px 3px 0;
+      background-color: #f5f7fa;
+    }
+
+    .modal-form-item .inline input[type="text"] {
+      border-radius: 3px 0 0 3px;
+    }
+
+    .stepper {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .stepper button {
+      width: 32px;
+      height: 28px;
+      border: 1px solid #dcdfe6;
+      background: #f5f7fa;
+      cursor: pointer;
+      font-size: 14px;
+      color: #333;
+      border-radius: 3px;
+      outline: none;
+      transition: background 0.2s;
+    }
+
+    .stepper button:hover {
+      background: #e4e7ed;
+    }
+
+    .stepper button:active {
+      background: #d3d7de;
+    }
+
+    .stepper-value {
+      width: 30px;
+      height: 28px;
+      line-height: 28px;
+      text-align: center;
+      margin: 0 3px;
+      font-size: 12px;
+      color: #333;
+    }
+
+    .modal-form-item .radio-group {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .modal-form-item .radio-group label {
+      width: auto;
+      text-align: left;
+      margin-right: 16px;
+    }
+
+    .modal-form-item .radio-group label.disabled {
+      color: #c0c4cc;
+      cursor: not-allowed;
+    }
+
+    .modal-form-item .radio-group label.disabled input {
+      cursor: not-allowed;
+    }
+
+    .modal-footer {
+      text-align: center;
+      margin-top: 18px;
+    }
+
+    .modal-footer .btn {
+      min-width: 80px;
+      margin: 0 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- 筛选区域 -->
+    <div class="filter-card">
+      <div class="filter-row">
+        <div class="filter-item">
+          <label>优惠券名称</label>
+          <input type="text" placeholder="" />
+        </div>
+        <div class="filter-item">
+          <label>优惠券编码</label>
+          <input type="text" />
+        </div>
+        <div class="filter-item">
+          <label>减免类型</label>
+          <select>
+            <option>全部</option>
+            <option>商品</option>
+            <option>运费</option>
+            <option>订单金额</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>门槛类型</label>
+          <select>
+            <option>全部</option>
+            <option>商品金额</option>
+            <option>订单金额</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div class="filter-item">
+          <label>创建人</label>
+          <input type="text" />
+        </div>
+        <div class="filter-item">
+          <label>优惠券类型</label>
+          <select>
+            <option>全部</option>
+            <option>现金券</option>
+            <option>折扣券</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>状态</label>
+          <select>
+            <option>全部</option>
+            <option>有效</option>
+            <option>已过期</option>
+            <option>已作废</option>
+          </select>
+        </div>
+        <div class="filter-item date-range">
+          <label>创建时间</label>
+          <div class="date-range-input">
+            <input type="text" id="filterStartTime" placeholder="开始时间" readonly />
+            <span class="date-separator">至</span>
+            <input type="text" id="filterEndTime" placeholder="结束时间" readonly />
+          </div>
+        </div>
+
+        <div class="filter-actions">
+          <button class="btn btn-primary">查询</button>
+          <button class="btn btn-plain">重置</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 上方操作按钮 -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+      <button class="btn btn-primary" id="btnCreateCoupon">创建优惠券</button>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn btn-warning" id="btnInvalidate">作废</button>
+        <button class="btn btn-danger" id="btnDelete">删除</button>
+      </div>
+    </div>
+
+    <!-- 列表表格 -->
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-checkbox">
+              <input type="checkbox" />
+            </th>
+            <th>优惠券名称/编码</th>
+            <th>优惠券前台名称</th>
+            <th>优惠券类型</th>
+            <th>减免类型</th>
+            <th>门槛类型</th>
+            <th>门槛金额</th>
+            <th>优惠面额</th>
+            <th class="col-valid-period">使用有效期</th>
+            <th class="col-creator">创建人/创建时间</th>
+            <th class="col-status">状态</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="col-checkbox">
+              <input type="checkbox" />
+            </td>
+            <td>
+              <div class="link-text">优惠券测试1</div>
+              <div class="text-gray">yhq234820342</div>
+            </td>
+            <td>new customer</td>
+            <td>现金券</td>
+            <td>商品</td>
+            <td>商品金额</td>
+            <td>10</td>
+            <td>2</td>
+            <td class="col-valid-period">
+              2025-11-19 00:00:00~<br />
+              2026-02-19 23:59:59
+            </td>
+            <td class="col-creator">
+              软件部<br />
+              <span class="text-gray">2025-11-21 15:25:22</span>
+            </td>
+            <td class="col-status"><span class="status-valid">有效</span></td>
+          </tr>
+
+          <tr>
+            <td class="col-checkbox">
+              <input type="checkbox" />
+            </td>
+            <td>
+              <div class="link-text">优惠券测试2</div>
+              <div class="text-gray">yhq234820342</div>
+            </td>
+            <td>old customer</td>
+            <td>现金券</td>
+            <td>运费</td>
+            <td>订单金额</td>
+            <td>20</td>
+            <td>4</td>
+            <td class="col-valid-period">
+              2025-11-19 00:00:00~<br />
+              2026-02-19 23:59:59
+            </td>
+            <td class="col-creator">
+              软件部<br />
+              <span class="text-gray">2025-11-21 15:25:22</span>
+            </td>
+            <td class="col-status"><span class="status-expired">已过期</span></td>
+          </tr>
+
+          <tr>
+            <td class="col-checkbox">
+              <input type="checkbox" />
+            </td>
+            <td>
+              <div class="link-text">优惠券测试3</div>
+              <div class="text-gray">yhq256820342</div>
+            </td>
+            <td>unpaid customer</td>
+            <td>现金券</td>
+            <td>运费</td>
+            <td>订单金额</td>
+            <td>50</td>
+            <td>8</td>
+            <td class="col-valid-period">
+              2025-11-19 00:00:00~<br />
+              2026-02-19 23:59:59
+            </td>
+            <td class="col-creator">
+              软件部<br />
+              <span class="text-gray">2025-11-21 15:25:22</span>
+            </td>
+            <td class="col-status"><span class="status-invalid">已作废</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 创建优惠券弹窗 -->
+  <div class="modal-mask" id="createCouponModal">
+    <div class="modal">
+      <div class="modal-title">创建优惠券</div>
+      <div class="modal-line"></div>
+
+      <div class="modal-section-title">基本信息</div>
+
+      <div class="modal-form-row">
+        <div class="modal-form-item">
+          <label><span class="required">*</span>优惠券类型</label>
+          <div class="radio-group">
+            <label><input type="radio" name="couponType" checked /> 现金券</label>
+          </div>
+        </div>
+        <div class="modal-form-item wide-field">
+          <label><span class="required">*</span>优惠券名称</label>
+          <input type="text" />
+        </div>
+      </div>
+
+      <div class="modal-form-row">
+        <div class="modal-form-item">
+          <label><span class="required">*</span>优惠面额</label>
+          <div class="inline">
+            <input type="text" />
+            <span class="unit-box">$</span>
+          </div>
+        </div>
+        <div class="modal-form-item wide-field">
+          <label><span class="required">*</span>优惠券前台名称</label>
+          <input type="text" placeholder="请填写英文" />
+        </div>
+      </div>
+
+      <div class="modal-form-row has-textarea">
+        <div class="modal-form-item align-top">
+          <label><span class="required">*</span>单个客户可领取数量</label>
+          <div class="stepper">
+            <button type="button" onclick="decrementStepper()">-</button>
+            <span class="stepper-value" id="stepperValue">1</span>
+            <button type="button" onclick="incrementStepper()">+</button>
+          </div>
+        </div>
+        <div class="modal-form-item align-top wide-field">
+          <label><span class="required">*</span>优惠券前台描述</label>
+          <textarea placeholder="请填写英文" maxlength="500"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-form-row">
+        <div class="modal-form-item">
+          <label>发行总量</label>
+          <input type="text" />
+        </div>
+      </div>
+
+      <div class="modal-section-title">使用规则</div>
+      <div class="modal-line"></div>
+
+      <div class="modal-form-row">
+        <div class="modal-form-item">
+          <label><span class="required">*</span>使用有效期</label>
+          <div class="radio-group">
+            <label><input type="radio" name="validType" value="period" onchange="toggleValidType()" /> 时间段</label>
+            <label><input type="radio" name="validType" value="days" onchange="toggleValidType()" /> 天数</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-form-row" id="validPeriodRow" style="display: none;">
+        <div class="modal-form-item date-range">
+          <label>请选择时间段</label>
+          <div class="date-range-input">
+            <input type="text" id="startDateTime" placeholder="开始时间" readonly />
+            <span class="date-separator">至</span>
+            <input type="text" id="endDateTime" placeholder="结束时间" readonly />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-form-row" id="validDaysRow" style="display: none;">
+        <div class="modal-form-item">
+          <label>请输入天数</label>
+          <input type="text" placeholder="请输入天数" />
+        </div>
+      </div>
+
+      <div class="modal-form-row">
+        <div class="modal-form-item">
+          <label><span class="required">*</span>减免类型</label>
+          <div class="radio-group">
+            <label><input type="radio" name="discountType" value="product" onchange="handleDiscountTypeChange()" /> 商品</label>
+            <label><input type="radio" name="discountType" value="shipping" onchange="handleDiscountTypeChange()" /> 运费</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-form-row">
+        <div class="modal-form-item">
+          <label><span class="required">*</span>门槛类型</label>
+          <div class="radio-group">
+            <label><input type="radio" name="thresholdType" id="thresholdProductAmount" value="productAmount" onchange="handleThresholdTypeChange()" /> 商品金额</label>
+            <label><input type="radio" name="thresholdType" id="thresholdOrderAmount" value="orderAmount" onchange="handleThresholdTypeChange()" /> 订单金额</label>
+          </div>
+        </div>
+        <div class="modal-form-item">
+          <label><span class="required">*</span>门槛金额</label>
+          <div class="inline">
+            <input type="text" />
+            <span class="unit-box">$</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-form-row">
+        <div class="modal-form-item">
+          <label><span class="required">*</span>商品范围</label>
+          <div class="radio-group">
+            <label><input type="radio" name="productScope" id="scopeAll" value="all" /> 全部</label>
+            <label><input type="radio" name="productScope" id="scopeProductId" value="productId" /> 商品编号</label>
+            <label><input type="radio" name="productScope" id="scopeCategory" value="category" /> 商品分类</label>
+            <label><input type="radio" name="productScope" id="scopeBrand" value="brand" /> 商品品牌</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-plain" id="btnModalCancel">返回</button>
+        <button class="btn btn-primary" id="btnModalSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 确认对话框 -->
+  <div class="confirm-mask" id="confirmDialog" onclick="if(event.target === this) closeConfirmDialog()">
+    <div class="confirm-dialog">
+      <div class="confirm-header">
+        <span class="confirm-title">提示</span>
+        <button class="confirm-close" onclick="closeConfirmDialog()">×</button>
+      </div>
+      <div class="confirm-body">
+        <div class="confirm-icon">!</div>
+        <div class="confirm-message" id="confirmMessage"></div>
+      </div>
+      <div class="confirm-footer">
+        <button class="confirm-btn" onclick="closeConfirmDialog()">取消</button>
+        <button class="confirm-btn confirm-btn-primary" id="confirmOkBtn">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 步进器函数
+    function incrementStepper() {
+      var stepperValue = document.getElementById("stepperValue");
+      var currentValue = parseInt(stepperValue.textContent);
+      stepperValue.textContent = currentValue + 1;
+    }
+
+    function decrementStepper() {
+      var stepperValue = document.getElementById("stepperValue");
+      var currentValue = parseInt(stepperValue.textContent);
+      if (currentValue > 1) {
+        stepperValue.textContent = currentValue - 1;
+      }
+    }
+
+    // 确认对话框函数
+    var confirmCallback = null;
+
+    function showConfirmDialog(message, callback) {
+      var dialog = document.getElementById("confirmDialog");
+      var messageEl = document.getElementById("confirmMessage");
+      var okBtn = document.getElementById("confirmOkBtn");
+      var footer = dialog.querySelector(".confirm-footer");
+      
+      messageEl.textContent = message;
+      confirmCallback = callback;
+      dialog.style.display = "flex";
+      
+      // 如果没有回调函数，只显示确定按钮（作为提示框）
+      if (!callback) {
+        footer.innerHTML = '<button class="confirm-btn confirm-btn-primary" onclick="closeConfirmDialog()">确定</button>';
+      } else {
+        footer.innerHTML = '<button class="confirm-btn" onclick="closeConfirmDialog()">取消</button><button class="confirm-btn confirm-btn-primary" id="confirmOkBtn">确定</button>';
+        
+        // 确定按钮点击事件
+        document.getElementById("confirmOkBtn").onclick = function() {
+          closeConfirmDialog();
+          if (confirmCallback) {
+            confirmCallback();
+          }
+        };
+      }
+    }
+
+    function closeConfirmDialog() {
+      var dialog = document.getElementById("confirmDialog");
+      dialog.style.display = "none";
+      confirmCallback = null;
+    }
+
+    // 有效期类型切换函数
+    function toggleValidType() {
+      var radios = document.getElementsByName("validType");
+      var periodRow = document.getElementById("validPeriodRow");
+      var daysRow = document.getElementById("validDaysRow");
+      
+      var selectedValue = "";
+      for (var i = 0; i < radios.length; i++) {
+        if (radios[i].checked) {
+          selectedValue = radios[i].value;
+          break;
+        }
+      }
+      
+      if (selectedValue === "period") {
+        periodRow.style.display = "flex";
+        daysRow.style.display = "none";
+      } else if (selectedValue === "days") {
+        periodRow.style.display = "none";
+        daysRow.style.display = "flex";
+      } else {
+        periodRow.style.display = "none";
+        daysRow.style.display = "none";
+      }
+    }
+
+    // 减免类型切换处理
+    function handleDiscountTypeChange() {
+      var discountRadios = document.getElementsByName("discountType");
+      var selectedDiscount = "";
+      
+      for (var i = 0; i < discountRadios.length; i++) {
+        if (discountRadios[i].checked) {
+          selectedDiscount = discountRadios[i].value;
+          break;
+        }
+      }
+      
+      var thresholdProductAmount = document.getElementById("thresholdProductAmount");
+      var thresholdOrderAmount = document.getElementById("thresholdOrderAmount");
+      
+      if (selectedDiscount === "product") {
+        // 减免类型选择商品，门槛类型只能选择商品金额
+        thresholdProductAmount.disabled = false;
+        thresholdProductAmount.parentElement.classList.remove("disabled");
+        thresholdOrderAmount.disabled = true;
+        thresholdOrderAmount.checked = false;
+        thresholdOrderAmount.parentElement.classList.add("disabled");
+        
+        // 自动选择商品金额
+        thresholdProductAmount.checked = true;
+        handleThresholdTypeChange();
+      } else if (selectedDiscount === "shipping") {
+        // 减免类型选择运费，门槛类型可以选择商品金额和订单金额
+        thresholdProductAmount.disabled = false;
+        thresholdProductAmount.parentElement.classList.remove("disabled");
+        thresholdOrderAmount.disabled = false;
+        thresholdOrderAmount.parentElement.classList.remove("disabled");
+      }
+    }
+
+    // 门槛类型切换处理
+    function handleThresholdTypeChange() {
+      var thresholdRadios = document.getElementsByName("thresholdType");
+      var selectedThreshold = "";
+      
+      for (var i = 0; i < thresholdRadios.length; i++) {
+        if (thresholdRadios[i].checked) {
+          selectedThreshold = thresholdRadios[i].value;
+          break;
+        }
+      }
+      
+      var scopeAll = document.getElementById("scopeAll");
+      var scopeProductId = document.getElementById("scopeProductId");
+      var scopeCategory = document.getElementById("scopeCategory");
+      var scopeBrand = document.getElementById("scopeBrand");
+      
+      if (selectedThreshold === "productAmount") {
+        // 门槛类型选择商品金额，商品范围可以选择全部、商品编号、商品分类、商品品牌
+        scopeAll.disabled = false;
+        scopeAll.parentElement.classList.remove("disabled");
+        scopeProductId.disabled = false;
+        scopeProductId.parentElement.classList.remove("disabled");
+        scopeCategory.disabled = false;
+        scopeCategory.parentElement.classList.remove("disabled");
+        scopeBrand.disabled = false;
+        scopeBrand.parentElement.classList.remove("disabled");
+      } else if (selectedThreshold === "orderAmount") {
+        // 门槛类型选择订单金额，商品范围只能选择全部
+        scopeAll.disabled = false;
+        scopeAll.parentElement.classList.remove("disabled");
+        scopeProductId.disabled = true;
+        scopeProductId.checked = false;
+        scopeProductId.parentElement.classList.add("disabled");
+        scopeCategory.disabled = true;
+        scopeCategory.checked = false;
+        scopeCategory.parentElement.classList.add("disabled");
+        scopeBrand.disabled = true;
+        scopeBrand.checked = false;
+        scopeBrand.parentElement.classList.add("disabled");
+        
+        // 自动选择全部
+        scopeAll.checked = true;
+      }
+    }
+
+    (function () {
+      var btnCreate = document.getElementById("btnCreateCoupon");
+      var modal = document.getElementById("createCouponModal");
+      var btnCancel = document.getElementById("btnModalCancel");
+      var btnSave = document.getElementById("btnModalSave");
+      var btnInvalidate = document.getElementById("btnInvalidate");
+      var btnDelete = document.getElementById("btnDelete");
+
+      function openModal() {
+        modal.style.display = "flex";
+      }
+
+      function closeModal() {
+        modal.style.display = "none";
+      }
+
+      btnCreate.addEventListener("click", openModal);
+      btnCancel.addEventListener("click", closeModal);
+      btnSave.addEventListener("click", function () {
+        // 示例：这里只关闭弹窗，实际保存逻辑可根据需求补充
+        closeModal();
+      });
+
+      // 为所有优惠券名称添加点击事件
+      var couponLinks = document.querySelectorAll(".link-text");
+      couponLinks.forEach(function(link) {
+        link.addEventListener("click", function() {
+          // 这里可以根据实际情况获取对应行的数据
+          var couponData = {
+            type: "现金券",
+            name: this.textContent,
+            code: "yhq234820342",
+            amount: "2 USD",
+            frontendName: "customer",
+            limitPerCustomer: "1 张",
+            description: "for new customer",
+            totalIssue: "不限制",
+            validPeriod: "2025-11-26 00:00:00 ~ 2026-02-26 23:59:59",
+            discountType: "商品",
+            thresholdType: "商品金额",
+            thresholdAmount: "10 USD",
+            productScope: "指定商品",
+            productIds: "C346、C898、C903"
+          };
+          
+          // 将数据存储到localStorage
+          localStorage.setItem('currentCouponDetail', JSON.stringify(couponData));
+          
+          // 跳转到详情页
+          window.location.href = 'coupon-detail.html?id=' + encodeURIComponent(this.textContent);
+        });
+      });
+
+      // 点击遮罩空白区域关闭创建弹窗
+      modal.addEventListener("click", function (e) {
+        if (e.target === modal) {
+          closeModal();
+        }
+      });
+
+      // 作废按钮点击事件
+      btnInvalidate.addEventListener("click", function () {
+        // 检查是否有选中的项
+        var checkedBoxes = document.querySelectorAll('tbody input[type="checkbox"]:checked');
+        if (checkedBoxes.length === 0) {
+          showConfirmDialog("请先选择要作废的优惠券", null);
+          return;
+        }
+        
+        var count = checkedBoxes.length;
+        showConfirmDialog("确定要作废选中的 " + count + " 个优惠券吗？", function() {
+          // 这里添加实际的作废逻辑
+          // 清除选中状态
+          checkedBoxes.forEach(function(box) {
+            box.checked = false;
+          });
+          showConfirmDialog("已作废 " + count + " 个优惠券", null);
+        });
+      });
+
+      // 删除按钮点击事件
+      btnDelete.addEventListener("click", function () {
+        // 检查是否有选中的项
+        var checkedBoxes = document.querySelectorAll('tbody input[type="checkbox"]:checked');
+        if (checkedBoxes.length === 0) {
+          showConfirmDialog("请先选择要删除的优惠券", null);
+          return;
+        }
+        
+        var count = checkedBoxes.length;
+        showConfirmDialog("确定要删除选中的 " + count + " 个优惠券吗？此操作不可恢复！", function() {
+          // 这里添加实际的删除逻辑
+          // 清除选中状态
+          checkedBoxes.forEach(function(box) {
+            box.checked = false;
+          });
+          showConfirmDialog("已删除 " + count + " 个优惠券", null);
+        });
+      });
+
+      // 初始化日期时间选择器
+      layui.use('laydate', function(){
+        var laydate = layui.laydate;
+        
+        // 筛选区域 - 创建时间范围选择器
+        laydate.render({
+          elem: '#filterStartTime',
+          type: 'datetime',
+          format: 'yyyy-MM-dd HH:mm:ss',
+          range: false
+        });
+        
+        laydate.render({
+          elem: '#filterEndTime',
+          type: 'datetime',
+          format: 'yyyy-MM-dd HH:mm:ss',
+          range: false
+        });
+        
+        // 弹窗区域 - 使用有效期时间段选择器
+        laydate.render({
+          elem: '#startDateTime',
+          type: 'datetime',
+          format: 'yyyy-MM-dd HH:mm:ss',
+          range: false
+        });
+        
+        laydate.render({
+          elem: '#endDateTime',
+          type: 'datetime',
+          format: 'yyyy-MM-dd HH:mm:ss',
+          range: false
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
